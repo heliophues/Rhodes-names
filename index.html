@@ -5,9 +5,125 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Apéndice de datos – [Onomata Rhodiaka]</title>
   <link rel="stylesheet" href="style.css"/>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,600;1,400&family=Source+Code+Pro:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    /* ── Estilos del catálogo con acordeón ── */
+    :root {
+      --ink:       #1a1a1a;
+      --muted:     #5a5a5a;
+      --faint:     #e8e4de;
+      --accent:    #6b4e2a;
+      --bg-row:    #fff;
+      --row-hover: #f2ede6;
+    }
+
+    .search-bar {
+      margin: 1.2rem 0 0.8rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .search-bar input {
+      font-family: 'EB Garamond', Georgia, serif;
+      font-size: 1rem;
+      padding: 0.4rem 0.75rem;
+      border: 1px solid #c8c0b4;
+      background: #fff;
+      color: var(--ink);
+      width: 280px;
+      outline: none;
+      border-radius: 2px;
+      transition: border-color 0.15s;
+    }
+
+    .search-bar input:focus { border-color: var(--accent); }
+
+    .count {
+      font-size: 0.82rem;
+      color: var(--muted);
+      margin-left: auto;
+    }
+
+    .table-head {
+      display: grid;
+      grid-template-columns: 2fr 2fr 1.4fr 1.4fr 2fr;
+      background: #1a1a1a;
+      color: #fff;
+      font-size: 0.75rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      padding: 0.45rem 1rem;
+    }
+
+    .accordion { border-bottom: 1px solid var(--faint); }
+
+    .acc-trigger {
+      display: flex;
+      align-items: baseline;
+      gap: 0.6rem;
+      width: 100%;
+      background: none;
+      border: none;
+      border-top: 1px solid var(--faint);
+      padding: 0.6rem 1rem;
+      cursor: pointer;
+      text-align: left;
+      font-family: 'EB Garamond', Georgia, serif;
+      font-size: 1.05rem;
+      color: var(--ink);
+      transition: background 0.1s;
+    }
+
+    .acc-trigger:hover { background: var(--row-hover); }
+
+    .acc-trigger .arrow {
+      font-size: 0.65rem;
+      color: var(--accent);
+      transition: transform 0.2s ease;
+      flex-shrink: 0;
+    }
+
+    .acc-trigger[aria-expanded="true"] .arrow { transform: rotate(90deg); }
+
+    .acc-trigger .nom { font-weight: 600; flex: 1; }
+
+    .acc-trigger .badge {
+      font-size: 0.72rem;
+      color: var(--muted);
+      font-style: italic;
+    }
+
+    .acc-panel { display: none; background: var(--bg-row); border-top: 1px solid var(--faint); }
+    .acc-panel.open { display: block; }
+
+    .acc-row {
+      display: grid;
+      grid-template-columns: 2fr 2fr 1.4fr 1.4fr 2fr;
+      padding: 0.45rem 1rem;
+      font-size: 0.95rem;
+      border-bottom: 1px solid var(--faint);
+      font-family: 'EB Garamond', Georgia, serif;
+      transition: background 0.1s;
+    }
+
+    .acc-row:last-child { border-bottom: none; }
+    .acc-row:hover { background: var(--row-hover); }
+
+    .acc-row .ref {
+      font-family: 'Source Code Pro', monospace;
+      font-size: 0.78rem;
+      color: var(--accent);
+      align-self: center;
+    }
+
+    .acc-row .date { color: var(--muted); font-style: italic; }
+
+    mark { background: #f5d97a; color: inherit; border-radius: 1px; }
+  </style>
 </head>
 <body>
-
   <header>
     <p class="label">Apéndice de datos / Tesis doctoral</p>
     <h1>Catálogo completo de los antropónimos rodios</h1>
@@ -18,7 +134,6 @@
   </header>
 
   <main>
-
     <section id="descripcion">
       <h2>Descripción</h2>
       <p>El presente conjunto de datos, que corresponde al apéndice X de la tesis doctoral XXX, contiene todos los antropónimos antiguos atestiguados en la isla de Rodas ordenados alfabéticamente. Se recogen todos los individuos rodios conocidos portadores de cada antropónimo. Para el número de testimonios, su cronología y la etimología de cada antropónimo se remite al capítulo 2 (<i>Onomasticon</i>) de la citada tesis doctoral.</p>
@@ -65,6 +180,22 @@
       </table>
     </section>
 
+    <section id="catalogo">
+      <h2>Catálogo</h2>
+      <div class="search-bar">
+        <input type="text" id="buscar" placeholder="Filtrar por nombre, lugar, fecha…" oninput="filtrar(this.value)" autocomplete="off"/>
+        <span class="count" id="contador"></span>
+      </div>
+      <div class="table-head">
+        <span>Nombre</span>
+        <span>Forma real</span>
+        <span>Lugar</span>
+        <span>Fecha</span>
+        <span>Referencia</span>
+      </div>
+      <div id="lista"></div>
+    </section>
+
     <section id="licencia">
       <h2>Licencia y uso</h2>
       <p>
@@ -73,12 +204,106 @@
         Puedes reutilizarlo citando la fuente.
       </p>
     </section>
-
   </main>
 
   <footer>
     <p>Repositorio mantenido por Jeremy Pacheco Ascuy · <a href="mailto:jpacheco@usal.es">contacto</a></p>
   </footer>
 
+  <script>
+    // ── DATOS ──────────────────────────────────────────────────────────────────
+    // Formato: [nominativo, forma real, lugar, fecha, referencia]
+    const datos = [
+      ["Ἅβρων",        "Ἅβρων",             "Rodas",  "s. I d.C.",        "RE (4)"],
+      ["Ἀγάθα",        "Ἀγάθας",            "Rodas",  "helenística",      "SEG 46:1028"],
+      ["Ἀγαθάγητος",   "Ἀγαθαγήτου",        "Lindo",  "15 a.C.",          "I.Lindos 1, s.a."],
+      ["Ἀγαθάγητος",   "Ἀγαθάγητος",        "Lindo",  "171 a.C.",         "Plb. xxvii 7. 3; xxviii 2. 3"],
+      ["Ἀγαθάγητος",   "Ἀγαθαγήτου",        "Lindo",  "1ª mitad II a.C.", "IG XII (5) 913, 4"],
+      ["Ἀγαθάγητος",   "Ἀγαθαγήτου",        "Lindo",  "272 a.C.",         "I.Lindos 83"],
+      ["Ἀγαθάγητος",   "Ἀγαθαγήτου",        "Lindo",  "272-228 a.C.",     "I.Lindos 83; 104; Lindiaka 6 p. 21, 105"],
+      ["Ἀγαθάγητος",   "Ἀγαθαγήτου",        "Lindo",  "38 a.C.",          "I.Lindos 350 I, 9"],
+      ["Ἀγαθάγητος",   "Ἀγαθάγητος",        "Lindo",  "68 a.C.",          "IG XII 1 46, 148"],
+      ["Ἀγαθάγητος",   "Ἀγαθαγήτο[υ]",      "Lindo",  "III/II a.C.",      "Lindiaka 6 p. 23, 160"],
+      ["Ἀγαθάγητος",   "Ἀγαθαγήτου",        "Rodas",  "c.68 a.C.",        "IG XII 1 46, 324; I.Rhodes Kontorini II 3.X 1"],
+      ["Ἀγαθάγητος",   "Ἀγαθαγήτο[υ]",      "Rodas",  "c.90-65 a.C.",     "Cl. Rh. 8 p. 228, 33"],
+      ["Ἀγαθάγητος",   "Ἀγαθάγη<τ>ος",      "Rodas",  "helenística",      "IG XII 1 577"],
+      ["Ἀγαθαμερία",   "Ἀγ[α]θα̣μερίας",     "Lindo",  "II/I a.C.",        "IG XII 1 896"],
+      ["Ἀγαθαμερίς",   "Ἀγαθ[α]μερίς",      "Lindo",  "s. III a.C.",      "IG XII 1 944"],
+      ["Ἀγαθαμερίς",   "Ἀγαθαμερίδος",      "Rodas",  "helenística",      "IG XII 1 594"],
+    ];
+
+    function agrupar(filas) {
+      const mapa = new Map();
+      for (const f of filas) {
+        const clave = f[0];
+        if (!mapa.has(clave)) mapa.set(clave, []);
+        mapa.get(clave).push(f);
+      }
+      return [...mapa.entries()].sort((a, b) => a[0].localeCompare(b[0], 'el'));
+    }
+
+    function hl(texto, term) {
+      if (!term) return texto;
+      return texto.replace(new RegExp(term.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), "gi"),
+        m => `<mark>${m}</mark>`);
+    }
+
+    function renderizar(filas, resaltar = "") {
+      const lista = document.getElementById("lista");
+      const grupos = agrupar(filas);
+      lista.innerHTML = "";
+
+      for (const [nom, testimonios] of grupos) {
+        const n = testimonios.length;
+        const id = "acc-" + nom.replace(/\s/g, "_");
+        const section = document.createElement("div");
+        section.className = "accordion";
+        const nomHl = resaltar
+          ? nom.replace(new RegExp(resaltar.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), "gi"), m => `<mark>${m}</mark>`)
+          : nom;
+
+        section.innerHTML = `
+          <button class="acc-trigger" aria-expanded="false" aria-controls="${id}" onclick="toggle(this)">
+            <span class="arrow">▶</span>
+            <span class="nom">${nomHl}</span>
+            <span class="badge">${n} testimonio${n !== 1 ? "s" : ""}</span>
+          </button>
+          <div class="acc-panel" id="${id}" role="region">
+            ${testimonios.map(f => `
+              <div class="acc-row">
+                <span>${hl(f[0], resaltar)}</span>
+                <span>${hl(f[1], resaltar)}</span>
+                <span>${hl(f[2], resaltar)}</span>
+                <span class="date">${hl(f[3], resaltar)}</span>
+                <span class="ref">${hl(f[4], resaltar)}</span>
+              </div>`).join("")}
+          </div>`;
+        lista.appendChild(section);
+      }
+
+      document.getElementById("contador").textContent =
+        `${grupos.length} nombre${grupos.length !== 1 ? "s" : ""} · ${filas.length} testimonios`;
+    }
+
+    function toggle(btn) {
+      const expanded = btn.getAttribute("aria-expanded") === "true";
+      btn.setAttribute("aria-expanded", String(!expanded));
+      document.getElementById(btn.getAttribute("aria-controls"))?.classList.toggle("open", !expanded);
+    }
+
+    function filtrar(term) {
+      const t = term.trim().toLowerCase();
+      const filtrados = t ? datos.filter(f => f.some(c => c.toLowerCase().includes(t))) : datos;
+      renderizar(filtrados, term.trim());
+      if (t) {
+        document.querySelectorAll(".acc-trigger").forEach(btn => {
+          btn.setAttribute("aria-expanded", "true");
+          document.getElementById(btn.getAttribute("aria-controls"))?.classList.add("open");
+        });
+      }
+    }
+
+    renderizar(datos);
+  </script>
 </body>
 </html>
