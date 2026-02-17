@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Apéndice de datos – [Título breve de tu tesis]</title>
+  <link rel="stylesheet" href="style.css"/>
+</head>
+<body>
+
+  <header>
+    <p class="label">Apéndice de datos / Tesis doctoral</p>
+    <h1>[Título breve del dataset]</h1>
+    <p class="cita">
+      Apellido, N. (año). <em>Título completo de la tesis</em>.
+      Universidad. Disponible en: <a href="URL del repositorio">URL</a>
+    </p>
+  </header>
+
+  <main>
+
+    <section id="descripcion">
+      <h2>Descripción</h2>
+      <p>Breve explicación de qué son los datos, cómo se recolectaron y para qué sirven.</p>
+      <ul>
+        <li><strong>Unidad de análisis:</strong> ej. documentos / entrevistas / países</li>
+        <li><strong>N:</strong> número de casos/filas</li>
+        <li><strong>Periodo:</strong> años o fechas</li>
+        <li><strong>Formato:</strong> CSV, UTF-8</li>
+      </ul>
+    </section>
+
+    <section id="descarga">
+      <h2>Archivos</h2>
+      <table>
+        <thead>
+          <tr><th>Archivo</th><th>Descripción</th><th>Enlace</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>dataset.csv</td>
+            <td>Conjunto de datos principal</td>
+            <td><a href="data/dataset.csv">Descargar</a></td>
+          </tr>
+          <tr>
+            <td>codebook.pdf</td>
+            <td>Diccionario de variables</td>
+            <td><a href="data/codebook.pdf">Descargar</a></td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section id="variables">
+      <h2>Variables</h2>
+      <table>
+        <thead>
+          <tr><th>Variable</th><th>Tipo</th><th>Descripción</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>id</td><td>Entero</td><td>Identificador único</td></tr>
+          <tr><td>año</td><td>Entero</td><td>Año de registro</td></tr>
+          <!-- agrega tus variables aquí -->
+        </tbody>
+      </table>
+    </section>
+
+    <section id="licencia">
+      <h2>Licencia y uso</h2>
+      <p>
+        Este dataset se distribuye bajo licencia
+        <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank">CC BY 4.0</a>.
+        Puedes reutilizarlo citando la fuente.
+      </p>
+    </section>
+
+  </main>
+
+  <footer>
+    <p>Repositorio mantenido por [Tu nombre] · <a href="mailto:tucorreo@universidad.edu">contacto</a></p>
+  </footer>
+
+</body>
+</html>
